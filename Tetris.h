@@ -34,14 +34,34 @@ class Tetris
     bool bStopControls = false;
     bool bSpawnNextBlock = false;
 
-    struct Point { int x, y; } a[4], b[4], hold[4] = { NULL };
-    
+    struct Point { int x, y; };
+  
     struct Tetromino
     {
-        Point blocks[4];
-        sf::Color color;
+        Point blocks[4] = { NULL };
+        int colorNum = -1;
         int blockType = -1;
+
+        Tetromino(int _blockType, int figures[7][4])
+        {
+            blockType = _blockType;
+
+            for (int i = 0; i < 4; i++)
+            {
+                blocks[i].x = (figures[_blockType][i] % 2) + 6; // sets new blocks x pos
+                blocks[i].y = figures[_blockType][i] / 2;
+            }
+
+            colorNum = rand() % 6;
+        }
+
+        Tetromino()
+        {
+            
+        }
     };
+
+    Tetromino* spawnedTetromino = nullptr, backupTetromino, holdTetromino;
 
     int field[HEIGHT][WIDTH] = { 0 };
 
@@ -60,16 +80,17 @@ public:
     void Game();
     
 private:
-    void RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& window, bool& rotate, int& dx, float& delay, int& colorNum, sf::Sprite& background, sf::Sprite& s, sf::Sprite& frame, Clock matchTime);
-    void GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, int& colorNum, float& timer, float& delay);
-    bool Check(Point val[4]);
+    void RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& window, float& delay, Clock matchTime);
+    void GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, float& timer, float& delay);
+    bool Check(const Tetromino* tetrominoToCheck);
     void Move(int& dx);
     void Rotate(bool& rotate);
-    void Tick(float& timer, float& delay, int& colorNum);
-    void SpawnNextBlock(int& colorNum, bool bBlockSwapped = false);
+    void Tick(float& timer, float& delay);
+    void PlaceBlockInField();
+    void SpawnNextBlock();
     void CheckLines(sf::RenderWindow& window);
     void ClearFinishedLines(std::vector<int>& completedLines);
-    void Draw(sf::RenderWindow& window, sf::Sprite& background, sf::Sprite& s, int& colorNum, sf::Sprite& frame, Clock matchTime);
+    void Draw(sf::RenderWindow& window, Clock matchTime);
     void DrawNextBlockPreview(sf::RenderWindow& window);
     void DrawHoldBlock(sf::RenderWindow& window);
     void DrawGridLines(sf::RenderWindow& window, RectangleShape back);
