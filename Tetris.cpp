@@ -313,6 +313,8 @@ void Tetris::PlaceBlockInField()
         delete spawnedTetromino;
 
         spawnedTetromino = NULL;
+
+        waitTime.restart();
     }
 }
 
@@ -374,21 +376,38 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
     {
         if (std::find(completedLines.begin(), completedLines.end(), i) != completedLines.end())
         {
-            m--;
-        }
-
-        for (int j = 0; j < WIDTH; j++)
-        {
-            newField[i][j] = field[m][j];
+            for (int j = 0; j < WIDTH; j++)
+            {
+                field[m][j] = 7; // sets completed lines to a seperate color
+            }
         }
     }
 
-    for (int i = HEIGHT - 1; i > 0; i--)
+    if (waitTime.getElapsedTime().asSeconds() > 0.4) // time completes lines can stay on screen for
     {
-        for (int j = 0; j < WIDTH; j++)
+        int newField[HEIGHT][WIDTH] = { 0 };
+        for (int i = HEIGHT - 1, m = i; i > 0 && m > 0; i--, m--)
         {
-            field[i][j] = newField[i][j];
+            if (std::find(completedLines.begin(), completedLines.end(), i) != completedLines.end())
+            {
+                m--;
+            }
+
+            for (int j = 0; j < WIDTH; j++)
+            {
+                newField[i][j] = field[m][j]; // removes conpleted lines
+            }
         }
+
+        for (int i = HEIGHT - 1; i > 0; i--)
+        {
+            for (int j = 0; j < WIDTH; j++)
+            {
+                field[i][j] = newField[i][j];
+            }
+        }
+
+        waitTime.restart();
     }
 }
 
@@ -430,7 +449,7 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
 
         for (int i = 0; i < 4; i++) // Draw Current Block
         {
-            cell.setFillColor(Color::White);
+            cell.setFillColor(colorMap[spawnedTetromino->colorNum]);
             cell.setPosition(spawnedTetromino->blocks[i].x * CELL_SIZE, spawnedTetromino->blocks[i].y * CELL_SIZE);
             cell.move(CELL_SIZE, 28);
             window.draw(cell);
@@ -451,7 +470,7 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
             if (field[i][j] == 0)
                 continue;
 
-            cell.setFillColor(colorMap[(field[i][j] - 1) % 6]);
+            cell.setFillColor(colorMap[(field[i][j] - 1) % 7]);
             cell.setPosition(Vector2f(j * CELL_SIZE, i * CELL_SIZE));
             cell.move(CELL_SIZE, 28);
             window.draw(cell);

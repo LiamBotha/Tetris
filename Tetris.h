@@ -11,10 +11,10 @@ using namespace sf;
 
 class Tetris
 {
-    const Color colorMap[6] = 
+    const Color colorMap[7] =
     {
         Color::Green, Color::Blue, Color::Red,
-        Color::Yellow, Color::Magenta, Color::Cyan
+        Color::Yellow, Color::Magenta, Color::Cyan, Color(74, 64, 112),
     };
 
     static const int HEIGHT = 25;
@@ -75,6 +75,8 @@ class Tetris
         3,5,7,6, // J
         2,3,4,5, // O
     };
+
+    Clock waitTime;
 
 public:
     void Game();
