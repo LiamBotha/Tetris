@@ -429,12 +429,12 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
 {
     RectangleShape cell(Vector2f(CELL_SIZE, CELL_SIZE));
     RectangleShape tetrisBoard(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE));
-    window.clear(Color(100,100,100));
+    window.clear(Color(0, 31, 89));
 
     tetrisBoard.setFillColor(Color::Black);
     //back.setOrigin(back.getLocalBounds().width / 2, back.getLocalBounds().height / 2);
     //back.setPosition(window.getSize().x / 2, window.getSize().y / 2);
-    tetrisBoard.move(CELL_SIZE, CELL_SIZE * 1.8);
+    tetrisBoard.move((window.getSize().x / 2) - (tetrisBoard.getGlobalBounds().width / 2), CELL_SIZE * 1.8);
     window.draw(tetrisBoard);
     
     if (!bGameOver && spawnedTetromino != NULL)
@@ -455,8 +455,7 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
         for (int i = 0; i < 4; i++) // Draw Preview Block
         {
             previewBlock.setFillColor(Color(255,255,255,100));
-            previewBlock.setPosition(previewPosB.blocks[i].x * CELL_SIZE, previewPosB.blocks[i].y * CELL_SIZE);
-            previewBlock.move(CELL_SIZE, 28);
+            previewBlock.setPosition(tetrisBoard.getGlobalBounds().left + (previewPosB.blocks[i].x) * CELL_SIZE, tetrisBoard.getGlobalBounds().top + (previewPosB.blocks[i].y - 1) * CELL_SIZE);
             window.draw(previewBlock);
         }
 
@@ -464,14 +463,8 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
         for (int i = 0; i < 4; i++) // Draw Current Block
         {
             cell.setFillColor(colorMap[spawnedTetromino->colorNum]);
-            cell.setPosition(spawnedTetromino->blocks[i].x * CELL_SIZE, spawnedTetromino->blocks[i].y * CELL_SIZE);
-            cell.move(CELL_SIZE, 28);
+            cell.setPosition(tetrisBoard.getGlobalBounds().left + (spawnedTetromino->blocks[i].x) * CELL_SIZE, tetrisBoard.getGlobalBounds().top + (spawnedTetromino->blocks[i].y - 1) * CELL_SIZE);
             window.draw(cell);
-
-            //s.setTextureRect(IntRect(colorNum * 18, 0, 18, 18));
-            //s.setPosition(a[i].x * 18, a[i].y * 18);
-            //s.move(28, 31); //offset
-            //window.draw(s);
         }
     }
     
@@ -485,14 +478,8 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
                 continue;
 
             cell.setFillColor(colorMap[(field[i][j] - 1) % 7]);
-            cell.setPosition(Vector2f(j * CELL_SIZE, i * CELL_SIZE));
-            cell.move(CELL_SIZE, 28);
+            cell.setPosition(Vector2f(tetrisBoard.getGlobalBounds().left + (j * CELL_SIZE), tetrisBoard.getGlobalBounds().top + (i - 1) * CELL_SIZE));
             window.draw(cell);
-
-            //s.setTextureRect(IntRect(field[i][j] * 18, 0, 18, 18));
-            //s.setPosition(j * 18, i * 18);
-            //s.move(28, 31); //offset
-            //window.draw(s);
         }
     }
 
@@ -666,17 +653,17 @@ void Tetris::DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBo
 
 void Tetris::DrawGridLines(sf::RenderWindow& window, RectangleShape back)
 {
-    auto topLeft = back.getTransform().transformPoint(back.getPoint(0));
-    auto topRight = back.getTransform().transformPoint(back.getPoint(1));
-    auto botLeft = back.getTransform().transformPoint(back.getPoint(2));
-    auto botRight = back.getTransform().transformPoint(back.getPoint(3));
+    auto left = back.getGlobalBounds().left;
+    auto right = back.getGlobalBounds().left + back.getGlobalBounds().width;
+    auto top = back.getGlobalBounds().top;
+    auto bot = back.getGlobalBounds().top + back.getGlobalBounds().height;
 
     for (int i = 0; i < WIDTH + 1; i++)
     {
         sf::Vertex line[]
         {
-            Vector2f(i * CELL_SIZE + CELL_SIZE, topRight.y),
-            Vector2f(i * CELL_SIZE + CELL_SIZE, botRight.y)
+            Vector2f(left + (i * CELL_SIZE), top),
+            Vector2f(left + (i * CELL_SIZE), bot)
         };
 
         line[0].color = sf::Color(255, 255, 255, 50); // sets grid lines color
@@ -689,8 +676,8 @@ void Tetris::DrawGridLines(sf::RenderWindow& window, RectangleShape back)
     {
         sf::Vertex line[]
         {
-            Vector2f(topLeft.x, i * CELL_SIZE + (CELL_SIZE * 1.8)),
-            Vector2f(topRight.x, i * CELL_SIZE + (CELL_SIZE * 1.8))
+            Vector2f(left, top + (i * CELL_SIZE)),
+            Vector2f(right, top + (i * CELL_SIZE))
         };
 
         line[0].color = sf::Color(255, 255, 255, 50);
