@@ -341,8 +341,6 @@ void Tetris::CheckLines(sf::RenderWindow& window)
     int k = HEIGHT - 1; // Bottom Row
     int linesClearedAtOnce = 0;
 
-    std::vector<int> completedLines;
-
     for (int i = HEIGHT - 1; i > 0; i--)
     {
         int count = 0;
@@ -358,9 +356,14 @@ void Tetris::CheckLines(sf::RenderWindow& window)
 
         if (count >= WIDTH)
         {
-            completedLines.push_back(i);
-            linesClearedAtOnce++; // amount cleared in a single move
-            linesClearedInAGame++; // amount cleared over the whole game
+            if (std::find(completedLines.begin(), completedLines.end(), i) == completedLines.end())
+            {
+                std::cout << "Line: " << i << std::endl;
+
+                completedLines.push_back(i);
+                linesClearedAtOnce++; // amount cleared in a single move
+                linesClearedInAGame++; // amount cleared over the whole game 
+            }
         }
     }
 
@@ -371,35 +374,44 @@ void Tetris::CheckLines(sf::RenderWindow& window)
 
 void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
 {
-    int newField[HEIGHT][WIDTH] = { 0 };
-    for (int i = HEIGHT - 1, m = i; i > 0 && m > 0; i--, m--)
+    for (int i = HEIGHT - 1; i > 0; i--)
     {
         if (std::find(completedLines.begin(), completedLines.end(), i) != completedLines.end())
         {
             for (int j = 0; j < WIDTH; j++)
             {
-                field[m][j] = 7; // sets completed lines to a seperate color
+                field[i][j] = 7; // sets completed lines to a seperate color
             }
         }
     }
 
-    if (waitTime.getElapsedTime().asSeconds() > 0.4) // time completes lines can stay on screen for
+    //Timer gets reset everytime a new line is added. keeping it as a feature so that if you are fast enough you can stack line clears for large numbers 
+    if (waitTime.getElapsedTime().asSeconds() > 0.4 && completedLines.size() > 0) // time completes lines can stay on screen for
     {
+        std::cout << "Time: " << std::to_string(waitTime.getElapsedTime().asSeconds()) << std::endl;
+        
+        waitTime.restart();
+
         int newField[HEIGHT][WIDTH] = { 0 };
-        for (int i = HEIGHT - 1, m = i; i > 0 && m > 0; i--, m--)
+        for (int i = HEIGHT - 1, m = i; i >= 0 && m >= 0; i--, m--)
         {
-            if (std::find(completedLines.begin(), completedLines.end(), i) != completedLines.end())
+            while(std::find(completedLines.begin(), completedLines.end(), m) != completedLines.end())
             {
                 m--;
+                completedLines.erase(completedLines.begin());
             }
 
             for (int j = 0; j < WIDTH; j++)
             {
                 newField[i][j] = field[m][j]; // removes conpleted lines
+
+                std::cout << newField[i][j] << ", ";
             }
+
+            std::cout << std::endl;
         }
 
-        for (int i = HEIGHT - 1; i > 0; i--)
+        for (int i = HEIGHT - 1; i >= 0; i--)
         {
             for (int j = 0; j < WIDTH; j++)
             {
@@ -407,7 +419,7 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
             }
         }
 
-        waitTime.restart();
+        completedLines.clear();
     }
 }
 

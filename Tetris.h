@@ -63,6 +63,8 @@ class Tetris
 
     Tetromino* spawnedTetromino = nullptr, backupTetromino, holdTetromino;
 
+    std::vector<int> completedLines;
+
     int field[HEIGHT][WIDTH] = { 0 };
 
     int figures[7][4] =
