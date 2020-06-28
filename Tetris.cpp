@@ -233,7 +233,6 @@ void Tetris::Tick(float& timer, float& delay)
         PlaceBlockInField();
 
         bSwappedThisTurn = false;
-        bSpawnNextBlock = true;
 
         //SpawnNextBlock();
 
@@ -272,8 +271,6 @@ void Tetris::Tick(float& timer, float& delay)
 
             delete spawnedTetromino;
             spawnedTetromino = NULL;
-
-            bSpawnNextBlock = true;
 
             //SpawnNextBlock(true);
         }
@@ -387,9 +384,7 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
 
     //Timer gets reset everytime a new line is added. keeping it as a feature so that if you are fast enough you can stack line clears for large numbers
     if (waitTime.getElapsedTime().asSeconds() > 0.4 && completedLines.size() > 0) // time completes lines can stay on screen for
-    {
-        std::cout << "Time: " << std::to_string(waitTime.getElapsedTime().asSeconds()) << std::endl;
-        
+    {   
         waitTime.restart();
 
         int newField[HEIGHT][WIDTH] = { 0 };
@@ -404,11 +399,7 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
             for (int j = 0; j < WIDTH; j++)
             {
                 newField[i][j] = field[m][j]; // removes conpleted lines
-
-                std::cout << newField[i][j] << ", ";
             }
-
-            std::cout << std::endl;
         }
 
         for (int i = HEIGHT - 1; i >= 0; i--)
@@ -421,6 +412,9 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
 
         completedLines.clear();
     }
+
+    if (completedLines.size() == 0 && spawnedTetromino == NULL)
+        bSpawnNextBlock = true;
 }
 
 void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
