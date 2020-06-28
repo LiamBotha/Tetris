@@ -65,7 +65,7 @@ class Tetris
 
     std::vector<int> completedLines;
 
-    int field[HEIGHT][WIDTH] = { 0 };
+    int field[HEIGHT][WIDTH] = { 0 }; //TODO - Create Lines Class that holds each line's cells and has bCleared and timer var for better control
 
     int figures[7][4] =
     {

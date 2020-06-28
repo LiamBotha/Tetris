@@ -385,7 +385,7 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
         }
     }
 
-    //Timer gets reset everytime a new line is added. keeping it as a feature so that if you are fast enough you can stack line clears for large numbers 
+    //Timer gets reset everytime a new line is added. keeping it as a feature so that if you are fast enough you can stack line clears for large numbers
     if (waitTime.getElapsedTime().asSeconds() > 0.4 && completedLines.size() > 0) // time completes lines can stay on screen for
     {
         std::cout << "Time: " << std::to_string(waitTime.getElapsedTime().asSeconds()) << std::endl;
