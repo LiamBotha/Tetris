@@ -4,9 +4,8 @@ void Tetris::Game()
 {
     srand(time(0));
 
-    RenderWindow window(VideoMode(SCREENWIDTH, SCREENHEIGHT), "The Game!");
-    sf::View view;
-    view.reset(sf::FloatRect(0, 0, SCREENWIDTH, SCREENHEIGHT));
+    RenderWindow window(VideoMode(1600, 900), "The Game!");
+    sf::View view(sf::FloatRect(0, 0, 1600, 900));
     window.setView(view);
 
     Texture t1, t2, t3;
@@ -79,8 +78,17 @@ void Tetris::GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, flo
     Event e;
     while (window.pollEvent(e))
     {
+        // catch the resize events
+        if (e.type == sf::Event::Resized)
+        {
+            // update the view to the new size of the window
+            sf::FloatRect visibleArea(0, 0, e.size.width, e.size.height);
+            window.setView(sf::View(visibleArea));
+        }
+
         if (e.type == Event::Closed)
             window.close();
+
         if (e.type == Event::KeyReleased)
         {
             if (e.key.code == Keyboard::Space)
@@ -382,8 +390,8 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
         }
     }
 
-    //Timer gets reset everytime a new line is added. keeping it as a feature so that if you are fast enough you can stack line clears for large numbers
-    if (waitTime.getElapsedTime().asSeconds() > 0.4 && completedLines.size() > 0) // time completes lines can stay on screen for
+    //Timer gets reset everytime a new line is added.
+    if (waitTime.getElapsedTime().asSeconds() > 0.3 && completedLines.size() > 0) // time completes lines can stay on screen for
     {   
         waitTime.restart();
 
@@ -420,14 +428,14 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
 void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
 {
     RectangleShape cell(Vector2f(CELL_SIZE, CELL_SIZE));
-    RectangleShape back(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE));
+    RectangleShape tetrisBoard(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE));
     window.clear(Color(100,100,100));
 
-    back.setFillColor(Color::Black);
+    tetrisBoard.setFillColor(Color::Black);
     //back.setOrigin(back.getLocalBounds().width / 2, back.getLocalBounds().height / 2);
     //back.setPosition(window.getSize().x / 2, window.getSize().y / 2);
-    back.move(CELL_SIZE, CELL_SIZE * 1.8);
-    window.draw(back);
+    tetrisBoard.move(CELL_SIZE, CELL_SIZE * 1.8);
+    window.draw(tetrisBoard);
     
     if (!bGameOver && spawnedTetromino != NULL)
     {
@@ -467,7 +475,7 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
         }
     }
     
-    DrawGridLines(window, back);
+    DrawGridLines(window, tetrisBoard);
 
     for (int i = 0; i < HEIGHT; i++) // Draw World
     {
@@ -488,19 +496,21 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
         }
     }
 
-    DrawNextBlockPreview(window); // Maybe split code into GUI Draw and Game Draw?
-    DrawHoldBlock(window);
+    DrawNextBlockPreview(window, tetrisBoard); // Maybe split code into GUI Draw and Game Draw?
+    DrawHoldBlock(window, tetrisBoard);
+
+    float UIRightXPos = tetrisBoard.getGlobalBounds().left + tetrisBoard.getGlobalBounds().width + (CELL_SIZE / 2);
 
     std::stringstream precisionValue; // Shows Game Time
     precisionValue << std::fixed << std::setprecision(0);
     precisionValue << "Time: " << matchTime.getElapsedTime().asSeconds() << std::endl;
-    DrawUIText(window, precisionValue.str(), Vector2f(SCREENWIDTH - 125, CELL_SIZE * 2), 23, 0);
+    DrawUIText(window, precisionValue.str(), Vector2f(UIRightXPos, CELL_SIZE * 2), 23, 0);
 
     String textString = "Lines Cleared: " + std::to_string(linesClearedInAGame);
-    DrawUIText(window, textString, Vector2f(10, CELL_SIZE / 2), 23, 0);
+    DrawUIText(window, textString, Vector2f(tetrisBoard.getGlobalBounds().left, CELL_SIZE / 2), 23, 0);
 
     textString = "Score: " + std::to_string(score);
-    DrawUIText(window, textString, Vector2f(SCREENWIDTH - 125, CELL_SIZE * 3), 23, 0);
+    DrawUIText(window, textString, Vector2f(UIRightXPos, CELL_SIZE * 3), 23, 0);
 
     if(bGameOver)
         DrawUIText(window, "Game Over", Vector2f(SCREENWIDTH / 2, SCREENHEIGHT / 2), 50, 2);
@@ -509,18 +519,18 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
     window.display();
 }
 
-void Tetris::DrawNextBlockPreview(sf::RenderWindow& window)
+void Tetris::DrawNextBlockPreview(sf::RenderWindow& window, sf::RectangleShape tetrisBoard) // TODO - Break out into UI Class
 {
     if (true) // Draws the preview for next block 
     {
-        float previewPanelXPos = 132;
-        float previewPanelYPos = 200;
+        float previewPanelXPos = tetrisBoard.getGlobalBounds().left + tetrisBoard.getGlobalBounds().width + (CELL_SIZE / 2.5);
+        float previewPanelYPos = tetrisBoard.getGlobalBounds().top + 130;
         Color previewColor = Color::White;
         RectangleShape previewPanel(Vector2f(3.5 * CELL_SIZE, 4.5 * CELL_SIZE));
         RectangleShape previewCell(Vector2f(CELL_SIZE, CELL_SIZE));
 
         previewPanel.setFillColor(Color::Black);
-        previewPanel.setPosition(SCREENWIDTH - previewPanelXPos, previewPanelYPos);
+        previewPanel.setPosition(previewPanelXPos, previewPanelYPos);
         previewPanel.setOutlineThickness(1);
         previewPanel.setOutlineColor(Color::White);
         window.draw(previewPanel);
@@ -580,18 +590,18 @@ void Tetris::DrawNextBlockPreview(sf::RenderWindow& window)
     }
 }
 
-void Tetris::DrawHoldBlock(sf::RenderWindow& window)
+void Tetris::DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBoard)
 {
     if (true) // Draws the preview for next block 
     {
-        float holdPanelXPos = 132;
-        float holdPanelYPos = 400;
+        float holdPanelXPos = tetrisBoard.getGlobalBounds().left + tetrisBoard.getGlobalBounds().width + (CELL_SIZE / 2.5);
+        float holdPanelYPos = tetrisBoard.getGlobalBounds().top + 330;
         Color holdColor = Color::White;
         RectangleShape holdPanel(Vector2f(3.5 * CELL_SIZE, 4.5 * CELL_SIZE));
         RectangleShape holdCell(Vector2f(CELL_SIZE, CELL_SIZE));
 
         holdPanel.setFillColor(Color::Black);
-        holdPanel.setPosition(SCREENWIDTH - holdPanelXPos, holdPanelYPos);
+        holdPanel.setPosition(holdPanelXPos, holdPanelYPos);
         holdPanel.setOutlineThickness(1);
         holdPanel.setOutlineColor(Color::White);
         window.draw(holdPanel);

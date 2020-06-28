@@ -19,7 +19,7 @@ class Tetris
 
     static const int HEIGHT = 25;
     static const int WIDTH = 15;
-    const int CELL_SIZE = 35;
+    const int CELL_SIZE = 34;
     const int SCREENWIDTH = (WIDTH + 5) * CELL_SIZE;
     const int SCREENHEIGHT = (HEIGHT + 1) * CELL_SIZE;
 
@@ -95,8 +95,8 @@ private:
     void CheckLines(sf::RenderWindow& window);
     void ClearFinishedLines(std::vector<int>& completedLines);
     void Draw(sf::RenderWindow& window, Clock matchTime);
-    void DrawNextBlockPreview(sf::RenderWindow& window);
-    void DrawHoldBlock(sf::RenderWindow& window);
+    void DrawNextBlockPreview(sf::RenderWindow& window, sf::RectangleShape tetrisBoard);
+    void DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBoard);
     void DrawGridLines(sf::RenderWindow& window, RectangleShape back);
     void DrawUIText(sf::RenderWindow& window, const String textString, Vector2f textPos, int textSize, int drawDirection);
 };
