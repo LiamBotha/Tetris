@@ -47,8 +47,11 @@ void Tetris::RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& windo
         if (bSpawnNextBlock)
             SpawnNextBlock();
 
-        if (Keyboard::isKeyPressed(Keyboard::Down) && !bGoTillLocked) // add to score for every line the block gets soft dropped
+        if (Keyboard::isKeyPressed(Keyboard::Down) && !bGoTillLocked && spawnedTetromino != NULL) // add to score for every line the block gets soft dropped
+        {
+            bIsSoftDropping = true;
             delay = 0.05;
+        }
 
         if (!bStopControls)
         {
@@ -236,13 +239,13 @@ void Tetris::Tick(float& timer, float& delay)
             {
                 spawnedTetromino->blocks[i].y += 1;
             }
+
+            score += 2;
         }
 
         PlaceBlockInField();
 
         bSwappedThisTurn = false;
-
-        //SpawnNextBlock();
 
     }
     else if (bSwapWithHoldBlock)
@@ -279,12 +282,16 @@ void Tetris::Tick(float& timer, float& delay)
 
             delete spawnedTetromino;
             spawnedTetromino = NULL;
-
-            //SpawnNextBlock(true);
         }
     }
     else if (timer > delay && spawnedTetromino != NULL)
     {
+        if (bIsSoftDropping)
+        {
+            score++;
+            bIsSoftDropping = false;
+        }
+
         backupTetromino = *spawnedTetromino;
 
         for (int i = 0; i < 4; i++)
@@ -298,8 +305,6 @@ void Tetris::Tick(float& timer, float& delay)
             
             bSwappedThisTurn = false;
             bSpawnNextBlock = true;
-
-            //SpawnNextBlock();
         }
 
         timer = 0;

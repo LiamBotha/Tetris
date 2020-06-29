@@ -33,6 +33,7 @@ class Tetris
     bool bSwappedThisTurn = false;
     bool bStopControls = false;
     bool bSpawnNextBlock = false;
+    bool bIsSoftDropping = false;
 
     struct Point { int x, y; };
   
