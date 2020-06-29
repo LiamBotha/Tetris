@@ -42,6 +42,7 @@ class Tetris
         Point blocks[4] = { NULL };
         int colorNum = -1;
         int blockType = -1;
+        int rotation = 0; // 0, 1 = 90 , 2 = 180, 3  = 270
 
         Tetromino(int _blockType, int figures[7][4])
         {
@@ -58,7 +59,10 @@ class Tetris
 
         Tetromino()
         {
-            
+            blocks[4] = { NULL };
+            colorNum = -1;
+            blockType = -1;
+            rotation = 0;
         }
     };
 
@@ -70,13 +74,13 @@ class Tetris
 
     int figures[7][4] =
     {
-        1,3,5,7, // I
-        2,4,5,7, // Z
-        3,5,4,6, // S
-        3,5,4,7, // T
-        2,3,5,7, // L
-        3,5,7,6, // J
-        2,3,4,5, // O
+        1,3,5,7, // I - 0
+        2,4,5,7, // Z - 1
+        3,5,4,6, // S - 2
+        3,5,4,7, // T - 3
+        2,3,5,7, // L - 4
+        3,5,7,6, // J - 5
+        2,3,4,5, // O - 6
     };
 
     Clock waitTime;
@@ -85,8 +89,9 @@ public:
     void Game();
     
 private:
-    void RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& window, float& delay, Clock matchTime);
-    void GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, float& timer, float& delay);
+    void RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& window, float& delay, Clock& matchTime);
+    void GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, float& timer, float& delay, Clock& matchTime);
+    void RestartGame(int& dx, bool& rotate, float& delay, float& timer, sf::Clock& matchTime);
     bool Check(const Tetromino* tetrominoToCheck);
     void Move(int& dx);
     void Rotate(bool& rotate);

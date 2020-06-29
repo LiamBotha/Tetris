@@ -33,14 +33,14 @@ void Tetris::Game()
     delete spawnedTetromino;
 }
 
-void Tetris::RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& window, float& delay, Clock matchTime)
+void Tetris::RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& window, float& delay, Clock& matchTime)
 {
     int dx = 0; bool rotate = 0; // dx is the direction to rotate
 
     timer += clock.getElapsedTime().asSeconds();
     clock.restart();
 
-    GetPlayerInput(window, rotate, dx, timer, delay);
+    GetPlayerInput(window, rotate, dx, timer, delay, matchTime);
 
     if (!bGameOver)
     {
@@ -76,7 +76,7 @@ void Tetris::RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& windo
 
 }
 
-void Tetris::GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, float& timer, float& delay)
+void Tetris::GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, float& timer, float& delay, Clock& matchTime)
 {
     Event e;
     while (window.pollEvent(e))
@@ -101,20 +101,7 @@ void Tetris::GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, flo
             }
             else if (e.key.code == Keyboard::Enter && bGameOver)
             {
-                bGameOver = false;
-                dx = 0;
-                rotate = 0;
-                delay = 0.3;
-                score = 0;
-                timer = 0;
-
-                for (int i = 0; i < HEIGHT; i++)
-                {
-                    for (int j = 0; j < WIDTH; j++)
-                    {
-                        field[i][j] = 0;
-                    }
-                }
+                RestartGame(dx, rotate, delay, timer, matchTime);
             }
         }
         else if (e.type == Event::KeyPressed && !bGoTillLocked)
@@ -131,6 +118,57 @@ void Tetris::GetPlayerInput(sf::RenderWindow& window, bool& rotate, int& dx, flo
                 dx = 1;
             else if (e.key.code == Keyboard::Z && !bSwappedThisTurn)
                 bSwapWithHoldBlock = true;
+        }
+    }
+}
+
+void Tetris::RestartGame(int& dx, bool& rotate, float& delay, float& timer, sf::Clock& matchTime)
+{
+    bGameOver = false;
+    bGoTillLocked = false;
+    bSwapWithHoldBlock = false;
+    bSwappedThisTurn = false;
+    bStopControls = false;
+    bSpawnNextBlock = false;
+    bIsSoftDropping = false;
+
+    linesClearedInAGame = 0;
+
+    previousBlockType = -1;
+    curBlockType = rand() % 7; // chooses new blocks type
+    nextBlockType = rand() % 7;
+
+    if (spawnedTetromino != NULL)
+    {
+        delete spawnedTetromino;
+        spawnedTetromino = NULL;
+
+        completedLines.clear();
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        holdTetromino.blocks[i] = { NULL };
+    }
+
+    holdTetromino.blockType = -1;
+    holdTetromino.colorNum = -1;
+    holdTetromino.rotation = -1;
+
+    dx = 0;
+    rotate = 0;
+    delay = 0.3;
+    score = 0;
+    timer = 0;
+
+    matchTime.restart();
+    waitTime.restart();
+
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            field[i][j] = 0;
         }
     }
 }
@@ -174,11 +212,34 @@ void Tetris::Move(int& dx)
     }
 }
 
-void Tetris::Rotate(bool& rotate)
+void Tetris::Rotate(bool& rotate) // TODO - Break into more chunks
+
 {
     if (rotate && spawnedTetromino != NULL)
     {
         Point p = spawnedTetromino->blocks[1]; //center of rotation // TODO - rework rotation point on individual basis
+
+        switch (spawnedTetromino->blockType) // For each Block Type. Returns if block is square or doesn't exist
+        {
+        case 0:
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        default:
+            return;
+        }
+
+        if (spawnedTetromino->blockType == 0 && spawnedTetromino->rotation == 2)
+            p = spawnedTetromino->blocks[2];
+
         for (int i = 0; i < 4; i++)
         {
             int x = spawnedTetromino->blocks[i].y - p.y;
@@ -224,6 +285,9 @@ void Tetris::Rotate(bool& rotate)
                 spawnedTetromino->blocks[i].x += pushDir;
             }
         }
+
+        if (!bReset)
+            spawnedTetromino->rotation = (spawnedTetromino->rotation + 1 % 4);
     }
 }
 
@@ -433,11 +497,11 @@ void Tetris::ClearFinishedLines(std::vector<int>& completedLines)
 void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
 {
     RectangleShape cell(Vector2f(CELL_SIZE, CELL_SIZE));
-    RectangleShape tetrisBoard(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE));
-    RectangleShape tetrisOutline(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE));
+    RectangleShape tetrisBoard(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE)); // Tetris Board That Blocks are on
+    RectangleShape tetrisOutline(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE)); // Outline for the Tetris board
     window.clear(Color::Black);
 
-    sf::Vertex background[]
+    sf::Vertex background[] // draws the gradient background
     {
         sf::Vertex(Vector2f(0, 0), sf::Color(0, 22, 74)),// top
         sf::Vertex(Vector2f(window.getSize().x, 0), sf::Color(0, 22, 74)),
@@ -468,7 +532,8 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
         RectangleShape previewBlock(Vector2f(CELL_SIZE, CELL_SIZE));
         Tetromino previewPosA = *spawnedTetromino;
         Tetromino previewPosB = *spawnedTetromino;
-        while (Check(&previewPosA))
+
+        while (Check(&previewPosA)) //Moves the preview to where it will lock in at the bottom
         {
             previewPosB = previewPosA;
 
@@ -515,8 +580,7 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
     float UIRightXPos = tetrisBoard.getGlobalBounds().left + tetrisBoard.getGlobalBounds().width + (CELL_SIZE / 2);
 
     std::stringstream precisionValue; // Shows Game Time
-    precisionValue << std::fixed << std::setprecision(0);
-    precisionValue << "Time: " << matchTime.getElapsedTime().asSeconds() << std::endl;
+    precisionValue << "Time: " << std::fixed << std::setprecision(0) << matchTime.getElapsedTime().asSeconds() << std::endl;
     DrawUIText(window, precisionValue.str(), Vector2f(UIRightXPos, tetrisBoard.getGlobalBounds().top + (CELL_SIZE * 6)), 23, 0);
 
     String textString = "Lines Cleared: " + std::to_string(linesClearedInAGame);
@@ -526,7 +590,7 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
     DrawUIText(window, textString, Vector2f(UIRightXPos, tetrisBoard.getGlobalBounds().top + (CELL_SIZE * 7)), 23, 0);
 
     if(bGameOver)
-        DrawUIText(window, "Game Over", Vector2f(UIRightXPos + (tetrisBoard.getGlobalBounds().width / 2), SCREENHEIGHT / 2), 50, 2);
+        DrawUIText(window, "Game Over", Vector2f(tetrisBoard.getGlobalBounds().left + (tetrisBoard.getGlobalBounds().width / 2), SCREENHEIGHT / 2), 50, 2);
 
     //window.draw(frame);
     window.display();
@@ -620,7 +684,7 @@ void Tetris::DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBo
         holdPanel.setOutlineColor(Color::White);
         window.draw(holdPanel);
 
-        if (holdBlockType != -1)
+        if (holdTetromino.blocks[0].x != NULL)
         {
             float holdBlockXPos = 0;
             float holdBlockYPos = 0;
