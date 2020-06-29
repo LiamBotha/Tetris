@@ -429,12 +429,33 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
 {
     RectangleShape cell(Vector2f(CELL_SIZE, CELL_SIZE));
     RectangleShape tetrisBoard(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE));
-    window.clear(Color(0, 31, 89));
+    RectangleShape tetrisOutline(Vector2f(WIDTH * CELL_SIZE, (HEIGHT - 1) * CELL_SIZE));
+    window.clear(Color::Black);
+
+    sf::Vertex background[]
+    {
+        sf::Vertex(Vector2f(0, 0), sf::Color(0, 22, 74)),// top
+        sf::Vertex(Vector2f(window.getSize().x, 0), sf::Color(0, 22, 74)),
+
+        sf::Vertex(Vector2f(window.getSize().x, window.getSize().y / 2), sf::Color(0, 88, 181)),
+        sf::Vertex(Vector2f(0, window.getSize().y / 2), sf::Color(0, 88, 181)),// top middle
+
+        sf::Vertex(Vector2f(0, window.getSize().y / 2), sf::Color(0, 88, 181)), //bot middle
+        sf::Vertex(Vector2f(window.getSize().x, window.getSize().y / 2), sf::Color(0, 88, 181)),
+
+        sf::Vertex(Vector2f(window.getSize().x, window.getSize().y), sf::Color(0, 22, 74)),
+        sf::Vertex(Vector2f(0, window.getSize().y), sf::Color(0, 22, 74)), // bot
+    };
+
+    window.draw(background, 8, sf::Quads);
 
     tetrisBoard.setFillColor(Color::Black);
-    //back.setOrigin(back.getLocalBounds().width / 2, back.getLocalBounds().height / 2);
-    //back.setPosition(window.getSize().x / 2, window.getSize().y / 2);
-    tetrisBoard.move((window.getSize().x / 2) - (tetrisBoard.getGlobalBounds().width / 2), CELL_SIZE * 1.8);
+    tetrisBoard.move((window.getSize().x / 2) - (tetrisBoard.getGlobalBounds().width / 2), (window.getSize().y / 2) - (tetrisBoard.getGlobalBounds().height / 2));
+    tetrisOutline.move((window.getSize().x / 2) - (tetrisBoard.getGlobalBounds().width / 2), (window.getSize().y / 2) - (tetrisBoard.getGlobalBounds().height / 2));
+
+    tetrisOutline.setOutlineThickness(2);
+    window.draw(tetrisOutline);
+
     window.draw(tetrisBoard);
     
     if (!bGameOver && spawnedTetromino != NULL)
@@ -491,16 +512,16 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
     std::stringstream precisionValue; // Shows Game Time
     precisionValue << std::fixed << std::setprecision(0);
     precisionValue << "Time: " << matchTime.getElapsedTime().asSeconds() << std::endl;
-    DrawUIText(window, precisionValue.str(), Vector2f(UIRightXPos, CELL_SIZE * 2), 23, 0);
+    DrawUIText(window, precisionValue.str(), Vector2f(UIRightXPos, tetrisBoard.getGlobalBounds().top + (CELL_SIZE * 6)), 23, 0);
 
     String textString = "Lines Cleared: " + std::to_string(linesClearedInAGame);
-    DrawUIText(window, textString, Vector2f(tetrisBoard.getGlobalBounds().left, CELL_SIZE / 2), 23, 0);
+    DrawUIText(window, textString, Vector2f(tetrisBoard.getGlobalBounds().left, tetrisBoard.getGlobalBounds().top - (CELL_SIZE)), 23, 0);
 
     textString = "Score: " + std::to_string(score);
-    DrawUIText(window, textString, Vector2f(UIRightXPos, CELL_SIZE * 3), 23, 0);
+    DrawUIText(window, textString, Vector2f(UIRightXPos, tetrisBoard.getGlobalBounds().top + (CELL_SIZE * 7)), 23, 0);
 
     if(bGameOver)
-        DrawUIText(window, "Game Over", Vector2f(SCREENWIDTH / 2, SCREENHEIGHT / 2), 50, 2);
+        DrawUIText(window, "Game Over", Vector2f(UIRightXPos + (tetrisBoard.getGlobalBounds().width / 2), SCREENHEIGHT / 2), 50, 2);
 
     //window.draw(frame);
     window.display();
@@ -511,7 +532,7 @@ void Tetris::DrawNextBlockPreview(sf::RenderWindow& window, sf::RectangleShape t
     if (true) // Draws the preview for next block 
     {
         float previewPanelXPos = tetrisBoard.getGlobalBounds().left + tetrisBoard.getGlobalBounds().width + (CELL_SIZE / 2.5);
-        float previewPanelYPos = tetrisBoard.getGlobalBounds().top + 130;
+        float previewPanelYPos = tetrisBoard.getGlobalBounds().top + 30;
         Color previewColor = Color::White;
         RectangleShape previewPanel(Vector2f(3.5 * CELL_SIZE, 4.5 * CELL_SIZE));
         RectangleShape previewCell(Vector2f(CELL_SIZE, CELL_SIZE));
@@ -581,11 +602,12 @@ void Tetris::DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBo
 {
     if (true) // Draws the preview for next block 
     {
-        float holdPanelXPos = tetrisBoard.getGlobalBounds().left + tetrisBoard.getGlobalBounds().width + (CELL_SIZE / 2.5);
-        float holdPanelYPos = tetrisBoard.getGlobalBounds().top + 330;
         Color holdColor = Color::White;
         RectangleShape holdPanel(Vector2f(3.5 * CELL_SIZE, 4.5 * CELL_SIZE));
         RectangleShape holdCell(Vector2f(CELL_SIZE, CELL_SIZE));
+
+        float holdPanelXPos = tetrisBoard.getGlobalBounds().left - holdPanel.getGlobalBounds().width - (CELL_SIZE / 2.5);
+        float holdPanelYPos = tetrisBoard.getGlobalBounds().top + 30;
 
         holdPanel.setFillColor(Color::Black);
         holdPanel.setPosition(holdPanelXPos, holdPanelYPos);

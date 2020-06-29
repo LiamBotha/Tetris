@@ -13,8 +13,8 @@ class Tetris
 {
     const Color colorMap[7] =
     {
-        Color::Green, Color::Blue, Color::Red,
-        Color::Yellow, Color::Magenta, Color::Cyan, Color(74, 64, 112),
+        Color::Green, Color(255, 113, 5) /*Orange*/, Color::Red,
+        Color::Yellow, Color::Magenta, Color::Cyan, Color(74, 64, 112) /*Lineclear Color*/
     };
 
     static const int HEIGHT = 25;
