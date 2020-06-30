@@ -36,6 +36,9 @@ void Tetris::Game()
 void Tetris::RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& window, float& delay, Clock& matchTime)
 {
     int dx = 0; bool rotate = 0; // dx is the direction to rotate
+    speedLevel = linesClearedInAGame / 10;
+
+    delay = std::max(0.01, 1  - ((speedLevel * 5.0) / 100));
 
     timer += clock.getElapsedTime().asSeconds();
     clock.restart();
@@ -50,7 +53,7 @@ void Tetris::RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& windo
         if (Keyboard::isKeyPressed(Keyboard::Down) && !bGoTillLocked && spawnedTetromino != NULL) // add to score for every line the block gets soft dropped
         {
             bIsSoftDropping = true;
-            delay = 0.05;
+            delay = std::min(0.06f, delay);
         }
 
         if (!bStopControls)
@@ -67,8 +70,6 @@ void Tetris::RunGameLoop(sf::Clock& clock, float& timer, sf::RenderWindow& windo
 
         // Check Lines
         CheckLines(window);
-
-        dx = 0; rotate = 0; delay = 0.6;
     }
 
     // Draw
@@ -363,12 +364,26 @@ void Tetris::Tick(float& timer, float& delay)
             spawnedTetromino->blocks[i].y += 1;
         }
 
-        if (!Check(spawnedTetromino))
+        if (!Check(spawnedTetromino) && spawnedTetromino->collisionTime.getElapsedTime().asSeconds() > lockTime)
         {
             PlaceBlockInField();
             
             bSwappedThisTurn = false;
             bSpawnNextBlock = true;
+        }
+        else if(!Check(spawnedTetromino))
+        {
+            std::cout << "Falling" << std::endl;
+
+            for (int i = 0; i < 4; i++) // reset it back so its not clipping wall
+            {
+                spawnedTetromino->blocks[i].x = backupTetromino.blocks[i].x;
+                spawnedTetromino->blocks[i].y = backupTetromino.blocks[i].y;
+            }
+        }
+        else
+        {
+            spawnedTetromino->collisionTime.restart();
         }
 
         timer = 0;
@@ -588,6 +603,9 @@ void Tetris::Draw(sf::RenderWindow& window, Clock matchTime)
 
     textString = "Score: " + std::to_string(score);
     DrawUIText(window, textString, Vector2f(UIRightXPos, tetrisBoard.getGlobalBounds().top + (CELL_SIZE * 7)), 23, 0);
+
+    textString = "Level: " + std::to_string(speedLevel + 1);
+    DrawUIText(window, textString, Vector2f(tetrisBoard.getGlobalBounds().left - CELL_SIZE , tetrisBoard.getGlobalBounds().top + (CELL_SIZE * 7)), 23, 1);
 
     if(bGameOver)
         DrawUIText(window, "Game Over", Vector2f(tetrisBoard.getGlobalBounds().left + (tetrisBoard.getGlobalBounds().width / 2), SCREENHEIGHT / 2), 50, 2);

@@ -17,8 +17,8 @@ class Tetris
         Color::Yellow, Color::Magenta, Color::Cyan, Color(74, 64, 112) /*Lineclear Color*/
     };
 
-    static const int HEIGHT = 25;
-    static const int WIDTH = 15;
+    static const int HEIGHT = 21;
+    static const int WIDTH = 10;
     const int CELL_SIZE = 34;
     const int SCREENWIDTH = (WIDTH + 5) * CELL_SIZE;
     const int SCREENHEIGHT = (HEIGHT + 1) * CELL_SIZE;
@@ -26,6 +26,9 @@ class Tetris
     int score = 0;
     int linesClearedInAGame = 0;
     int previousBlockType = -1, curBlockType = 0, nextBlockType = 0, holdBlockType = -1;
+    int speedLevel = 0;
+    
+    float lockTime = 1; // how long till a tetromino locks in place
 
     bool bGameOver = false;
     bool bGoTillLocked = false;
@@ -44,6 +47,8 @@ class Tetris
         int blockType = -1;
         int rotation = 0; // 0, 1 = 90 , 2 = 180, 3  = 270
 
+        Clock collisionTime;
+
         Tetromino(int _blockType, int figures[7][4])
         {
             blockType = _blockType;
@@ -59,16 +64,13 @@ class Tetris
 
         Tetromino()
         {
-            blocks[4] = { NULL };
-            colorNum = -1;
-            blockType = -1;
-            rotation = 0;
+
         }
     };
 
     Tetromino* spawnedTetromino = nullptr, backupTetromino, holdTetromino;
 
-    std::vector<int> completedLines;
+    std::vector<int> completedLines; // tracks completed lines pos in field
 
     int field[HEIGHT][WIDTH] = { 0 }; //TODO - Create Lines Class that holds each line's cells and has bCleared and timer var for better control
 
@@ -83,7 +85,7 @@ class Tetris
         2,3,4,5, // O - 6
     };
 
-    Clock waitTime;
+    Clock waitTime; // tracks how long completed lines have been on screen
 
 public:
     void Game();
