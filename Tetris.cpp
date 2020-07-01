@@ -217,6 +217,26 @@ void Tetris::Rotate(bool& rotate) // TODO - Break into more chunks
 {
     if (rotate && spawnedTetromino != NULL)
     {
+        //Positive Y is down - inverse of tetris wiki 
+        // 1 -> rot from 0, 2 -> rot from 90, 3 -> rot from 180, 4 -> rot from 270 
+        Point rotPositions[5][4] =
+        {
+            { {+0, +0}, {+0, +0}, {+0, +0}, {+0, +0} }, // 1
+            { {-1, +0}, {+1, +0}, {+1, +0}, {-2, +0} }, // 2
+            { {-1, -1}, {+1, +1}, {+1, -1}, {-1, +1} }, // 3
+            { {+0, +2}, {+0, -2}, {+0, +2}, {+0, -2} }, // 4
+            { {-1, +2}, {+1, -2}, {+1, +2}, {-1, -2} }, // 5
+        };
+
+        Point rotIPositions[5][4] =
+        {
+            { {+0, +0}, {+0, +0}, {+0, +0}, {+0, +0} }, // 1
+            { {-2, +0}, {-1, +0}, {+2, +0}, {-2, +0} }, // 2
+            { {+1, +0}, {+2, +0}, {-1, +0}, {+1, +0} }, // 3
+            { {+1, -2}, {-1, -2}, {+2, -1}, {-2, -1} }, // 4
+            { {-2, +1}, {+2, +1}, {-1, +1}, {+1, +2} }, // 5
+        };
+
         backupTetromino = *spawnedTetromino;
         Point p = spawnedTetromino->blocks[1]; //center of rotation // TODO - rework rotation point on individual basis
 
@@ -241,58 +261,123 @@ void Tetris::Rotate(bool& rotate) // TODO - Break into more chunks
         if (spawnedTetromino->blockType == 0 && spawnedTetromino->rotation == 2) //makes rotating straight block smoother by using the bot block if upside down
             p = spawnedTetromino->blocks[2];
 
+        //for (int i = 0; i < 4; i++)
+        //{
+        //    int x = spawnedTetromino->blocks[i].y - p.y;
+        //    int y = spawnedTetromino->blocks[i].x - p.x;
+
+        //    spawnedTetromino->blocks[i].x = p.x - x;
+        //    spawnedTetromino->blocks[i].y = p.y + y;
+        //}
+
+        int newX[4] = { 0 };
+        int newY[4] = { 0 };
         for (int i = 0; i < 4; i++)
         {
             int x = spawnedTetromino->blocks[i].y - p.y;
             int y = spawnedTetromino->blocks[i].x - p.x;
 
-            spawnedTetromino->blocks[i].x = p.x - x;
-            spawnedTetromino->blocks[i].y = p.y + y;
+            newX[i] = p.x - x;
+            newY[i] = p.y + y;
         }
 
         int pushDir = 0;
         bool bReset = false;
 
-        // Handles Wall Clipping 
-        for (int i = 0; i < 4; i++)
+        //// Handles Wall Clipping 
+        //for (int i = 0; i < 4; i++)
+        //{
+        //    if (curBlockType == 0)
+        //    {
+        //        if (spawnedTetromino->blocks[i].x < 0)
+        //            pushDir = 2;
+        //        else if (spawnedTetromino->blocks[i].x >= WIDTH)
+        //            pushDir = -2;
+        //    }
+        //    else
+        //    {
+        //        if (spawnedTetromino->blocks[i].x < 0)
+        //            pushDir = 1;
+        //        else if (spawnedTetromino->blocks[i].x >= WIDTH)
+        //            pushDir = -1;
+        //    }
+        //}
+        //for (int i = 0; i < 4; i++)
+        //{
+        //    spawnedTetromino->blocks[i].x += pushDir;
+        //}
+        //for (int dir = 0; dir < 5; dir++)
+        //{
+        //    for (int i = 0; i < 4; i++)
+        //    {
+        //        int tempXPos = newX + rotPositions[dir].x;
+        //        int tempYPos = newY + rotPositions[dir].y;
+        //        if (tempXPos >= HEIGHT || field[tempYPos][tempXPos])
+        //        {
+        //            spawnedTetromino->blocks[i].x = backupTetromino.blocks[i].x;
+        //            spawnedTetromino->blocks[i].y = backupTetromino.blocks[i].y;
+        //            spawnedTetromino->collisionTime.restart();
+        //            bReset = true;
+        //            break;
+        //        }
+        //    }
+        //    if (bReset == false)
+        //        break;
+        //}
+
+        for (int dir = 0; dir < 5; dir++)
         {
-            if (curBlockType == 0)
+            if (spawnedTetromino != 0)
             {
-                if (spawnedTetromino->blocks[i].x < 0)
-                    pushDir = 2;
-                else if (spawnedTetromino->blocks[i].x >= WIDTH)
-                    pushDir = -2;
+                bool canRotate = CheckIfRotationPossible(newX, newY, dir, rotPositions);
+
+                if (canRotate)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        spawnedTetromino->blocks[i].x = newX[i] + rotPositions[dir][spawnedTetromino->rotation].x;
+                        spawnedTetromino->blocks[i].y = newY[i] + rotPositions[dir][spawnedTetromino->rotation].y;
+                    }
+
+                    break;
+                }
             }
             else
             {
-                if (spawnedTetromino->blocks[i].x < 0)
-                    pushDir = 1;
-                else if (spawnedTetromino->blocks[i].x >= WIDTH)
-                    pushDir = -1;
+                bool canRotate = CheckIfRotationPossible(newX, newY, dir, rotIPositions);
+
+                if (canRotate)
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        spawnedTetromino->blocks[i].x = newX[i] + rotIPositions[dir][spawnedTetromino->rotation].x;
+                        spawnedTetromino->blocks[i].y = newY[i] + rotIPositions[dir][spawnedTetromino->rotation].y;
+                    }
+
+                    break;
+                }
             }
         }
 
-        for (int i = 0; i < 4; i++)
-        {
-            spawnedTetromino->blocks[i].x += pushDir;
-        }
-        
-        for (int i = 0; i < 4; i++)
-        {
-            if (spawnedTetromino->blocks[i].y >= HEIGHT || field[spawnedTetromino->blocks[i].y][spawnedTetromino->blocks[i].x])
-            {
-                spawnedTetromino->blocks[i].x = backupTetromino.blocks[i].x;
-                spawnedTetromino->blocks[i].y = backupTetromino.blocks[i].y;
-                  
-                spawnedTetromino->collisionTime.restart();
-
-                bReset = true;
-            }
-        }
-
-        if (!bReset)
-            spawnedTetromino->rotation = (spawnedTetromino->rotation + 1 % 4);
+        if (bReset == false)
+            spawnedTetromino->rotation = (spawnedTetromino->rotation + 1) % 4;
     }
+}
+
+bool Tetris::CheckIfRotationPossible(int newX[4], int newY[4], int dir, Point rotPositions[5][4])
+{
+    for (int i = 0; i < 4; i++)
+    {
+        int tempXPos = newX[i] + rotPositions[dir][spawnedTetromino->rotation].x;
+        int tempYPos = newY[i] + rotPositions[dir][spawnedTetromino->rotation].y;
+
+        if (tempXPos >= WIDTH  || tempXPos < 0 || field[tempYPos][tempXPos])
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void Tetris::Tick(float& timer, float& delay)

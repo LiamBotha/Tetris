@@ -110,6 +110,7 @@ private:
     bool Check(const Tetromino* tetrominoToCheck);
     void Move(int& dx);
     void Rotate(bool& rotate);
+    bool CheckIfRotationPossible(int newX[4], int newY[4], int dir, Tetris::Point rotPositions[5][4]);
     void Tick(float& timer, float& delay);
     void PlaceBlockInField();
     void SpawnNextBlock();
