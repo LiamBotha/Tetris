@@ -214,10 +214,10 @@ void Tetris::Move(int& dx)
 }
 
 void Tetris::Rotate(bool& rotate) // TODO - Break into more chunks
-
 {
     if (rotate && spawnedTetromino != NULL)
     {
+        backupTetromino = *spawnedTetromino;
         Point p = spawnedTetromino->blocks[1]; //center of rotation // TODO - rework rotation point on individual basis
 
         switch (spawnedTetromino->blockType) // For each Block Type. Returns if block is square or doesn't exist
@@ -238,7 +238,7 @@ void Tetris::Rotate(bool& rotate) // TODO - Break into more chunks
             return;
         }
 
-        if (spawnedTetromino->blockType == 0 && spawnedTetromino->rotation == 2)
+        if (spawnedTetromino->blockType == 0 && spawnedTetromino->rotation == 2) //makes rotating straight block smoother by using the bot block if upside down
             p = spawnedTetromino->blocks[2];
 
         for (int i = 0; i < 4; i++)
@@ -270,20 +270,23 @@ void Tetris::Rotate(bool& rotate) // TODO - Break into more chunks
                 else if (spawnedTetromino->blocks[i].x >= WIDTH)
                     pushDir = -1;
             }
-
-            if (spawnedTetromino->blocks[i].y >= HEIGHT || field[spawnedTetromino->blocks[i].y][spawnedTetromino->blocks[i].x])
-                bReset = true;
         }
 
         for (int i = 0; i < 4; i++)
         {
-            if (bReset)
+            spawnedTetromino->blocks[i].x += pushDir;
+        }
+        
+        for (int i = 0; i < 4; i++)
+        {
+            if (spawnedTetromino->blocks[i].y >= HEIGHT || field[spawnedTetromino->blocks[i].y][spawnedTetromino->blocks[i].x])
             {
-                spawnedTetromino->blocks[i] = backupTetromino.blocks[i];
-            }
-            else
-            {
-                spawnedTetromino->blocks[i].x += pushDir;
+                spawnedTetromino->blocks[i].x = backupTetromino.blocks[i].x;
+                spawnedTetromino->blocks[i].y = backupTetromino.blocks[i].y;
+                    
+                spawnedTetromino->collisionTime.restart();
+
+                bReset = true;
             }
         }
 
