@@ -283,7 +283,7 @@ void Tetris::Rotate(bool& rotate) // TODO - Break into more chunks
             {
                 spawnedTetromino->blocks[i].x = backupTetromino.blocks[i].x;
                 spawnedTetromino->blocks[i].y = backupTetromino.blocks[i].y;
-                    
+                  
                 spawnedTetromino->collisionTime.restart();
 
                 bReset = true;
@@ -340,8 +340,8 @@ void Tetris::Tick(float& timer, float& delay)
                 spawnedTetromino->blocks[i].y = temp.blocks[i].y;
 
                 //TODO figure how to get pivot and set to hold blocks pivot
-                spawnedTetromino->blocks[i].x = (figures[curBlockType][i] % 2) + 6; // sets new blocks x pos
-                spawnedTetromino->blocks[i].y = (figures[curBlockType][i] / 2);
+                spawnedTetromino->blocks[i].x = (shapes[curBlockType][i].x) + 6; // sets new blocks x pos
+                spawnedTetromino->blocks[i].y = (shapes[curBlockType][i].y);
             }
         }
         else
@@ -418,13 +418,13 @@ void Tetris::SpawnNextBlock()
     nextBlockType = rand() % 7;
     bGoTillLocked = false;
 
-    spawnedTetromino = new Tetromino(curBlockType, figures);
+    spawnedTetromino = new Tetromino(curBlockType, shapes);
     spawnedTetromino->colorNum = rand() % 6;
 
     for (int i = 0; i < 4; i++)
     {
-        spawnedTetromino->blocks[i].x = (figures[curBlockType][i] % 2) + 6; // sets new blocks x pos
-        spawnedTetromino->blocks[i].y = (figures[curBlockType][i] / 2);
+        spawnedTetromino->blocks[i].x = (shapes[curBlockType][i].x) + 3; // sets new blocks x pos
+        spawnedTetromino->blocks[i].y = (shapes[curBlockType][i].y) + 2;
     }
 }
 
@@ -624,7 +624,7 @@ void Tetris::DrawNextBlockPreview(sf::RenderWindow& window, sf::RectangleShape t
         float previewPanelXPos = tetrisBoard.getGlobalBounds().left + tetrisBoard.getGlobalBounds().width + (CELL_SIZE / 2.5);
         float previewPanelYPos = tetrisBoard.getGlobalBounds().top + 30;
         Color previewColor = Color::White;
-        RectangleShape previewPanel(Vector2f(3.5 * CELL_SIZE, 4.5 * CELL_SIZE));
+        RectangleShape previewPanel(Vector2f(4 * CELL_SIZE, 4 * CELL_SIZE));
         RectangleShape previewCell(Vector2f(CELL_SIZE, CELL_SIZE));
 
         previewPanel.setFillColor(Color::Black);
@@ -639,34 +639,34 @@ void Tetris::DrawNextBlockPreview(sf::RenderWindow& window, sf::RectangleShape t
         {
         case 0: // I
         {
-            previewBlockXPos = 10;
-            previewBlockYPos = 9;
+            previewBlockXPos = 7.5;
+            previewBlockYPos = 22;
             break;
         }
         case 1: // S
         {
-            previewBlockXPos = 25;
-            previewBlockYPos = -7;
+            previewBlockXPos = 22;
+            previewBlockYPos = 35;
             break;
         }
         case 2: // Z
         {
-            previewBlockXPos = 26;
-            previewBlockYPos = -8;
+            previewBlockXPos = 22;
+            previewBlockYPos = 35;
             break;
         }
         case 3: // -|
         case 4: //  7
         case 5: // _|
         {
-            previewBlockXPos = 25;
-            previewBlockYPos = -7;
+            previewBlockXPos = 22;
+            previewBlockYPos = 35;
             break;
         }
         case 6: // O
         {
-            previewBlockXPos = 27;
-            previewBlockYPos = 7;
+            previewBlockXPos = 9;
+            previewBlockYPos = 37;
             break;
         }
         default:
@@ -675,8 +675,8 @@ void Tetris::DrawNextBlockPreview(sf::RenderWindow& window, sf::RectangleShape t
 
         for (int i = 0; i < 4; i++) // Draw Preview Block
         {
-            int xPos = figures[nextBlockType][i] % 2 * CELL_SIZE;
-            int yPos = figures[nextBlockType][i] / 2 * CELL_SIZE;
+            int xPos = shapes[nextBlockType][i].x * (CELL_SIZE - 5);
+            int yPos = shapes[nextBlockType][i].y * (CELL_SIZE - 5);
 
             previewCell.setFillColor(previewColor);
             previewCell.setPosition(previewPanel.getPosition().x + previewBlockXPos + xPos, previewPanel.getPosition().y + previewBlockYPos + yPos); // Displays the preview of the next block type
@@ -693,7 +693,7 @@ void Tetris::DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBo
     if (true) // Draws the preview for next block 
     {
         Color holdColor = Color::White;
-        RectangleShape holdPanel(Vector2f(3.5 * CELL_SIZE, 4.5 * CELL_SIZE));
+        RectangleShape holdPanel(Vector2f(4 * CELL_SIZE, 4 * CELL_SIZE));
         RectangleShape holdCell(Vector2f(CELL_SIZE, CELL_SIZE));
 
         float holdPanelXPos = tetrisBoard.getGlobalBounds().left - holdPanel.getGlobalBounds().width - (CELL_SIZE / 2.5);
@@ -713,34 +713,34 @@ void Tetris::DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBo
             {
             case 0: // I
             {
-                holdBlockXPos = 10;
-                holdBlockYPos = 9;
+                holdBlockXPos = 7.5;
+                holdBlockYPos = 22;
                 break;
             }
-            case 1: // S
+            case 1: // Z
             {
-                holdBlockXPos = 25;
-                holdBlockYPos = -7;
+                holdBlockXPos = 22;
+                holdBlockYPos = 35;
                 break;
             }
-            case 2: // Z
+            case 2: // S
             {
-                holdBlockXPos = 26;
-                holdBlockYPos = -8;
+                holdBlockXPos = 22;
+                holdBlockYPos = 35;
                 break;
             }
-            case 3: // -|
-            case 4: //  7
-            case 5: // _|
+            case 3: // _|_
+            case 4: //  __|
+            case 5: // |__
             {
-                holdBlockXPos = 25;
-                holdBlockYPos = -7;
+                holdBlockXPos = 22;
+                holdBlockYPos = 35;
                 break;
             }
             case 6: // O
             {
-                holdBlockXPos = 27;
-                holdBlockYPos = 7;
+                holdBlockXPos = 9;
+                holdBlockYPos = 37;
                 break;
             }
             default:
@@ -749,8 +749,8 @@ void Tetris::DrawHoldBlock(sf::RenderWindow& window, sf::RectangleShape tetrisBo
 
             for (int i = 0; i < 4; i++) // Draw Hold Block
             {
-                int xPos = figures[holdBlockType][i] % 2 * CELL_SIZE;
-                int yPos = figures[holdBlockType][i] / 2 * CELL_SIZE;
+                int xPos = shapes[holdBlockType][i].x * (CELL_SIZE - 5);
+                int yPos = shapes[holdBlockType][i].y * (CELL_SIZE - 5);
 
                 holdCell.setFillColor(holdColor);
                 holdCell.setPosition(holdPanel.getPosition().x + holdBlockXPos + xPos, holdPanel.getPosition().y + holdBlockYPos + yPos); // Displays the preview of the next block type

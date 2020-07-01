@@ -51,14 +51,14 @@ class Tetris
 
         Clock collisionTime;
 
-        Tetromino(int _blockType, int figures[7][4])
+        Tetromino(int _blockType, Point shapes[7][4])
         {
             blockType = _blockType;
 
             for (int i = 0; i < 4; i++)
             {
-                blocks[i].x = (figures[_blockType][i] % 2) + 6; // sets new blocks x pos
-                blocks[i].y = figures[_blockType][i] / 2;
+                blocks[i].x = (shapes[_blockType][i].x) + 6; // sets new blocks x pos
+                blocks[i].y = (shapes[_blockType][i].y) + 2;
             }
 
             colorNum = rand() % 6;
@@ -76,15 +76,26 @@ class Tetris
 
     int field[HEIGHT][WIDTH] = { 0 }; //TODO - Create Lines Class that holds each line's cells and has bCleared and timer var for better control
 
-    int figures[7][4] =
+    //int figures[7][4] =
+    //{
+    //    1,3,5,7, // I - 0
+    //    2,4,5,7, // Z - 1
+    //    3,5,4,6, // S - 2
+    //    3,5,4,7, // T - 3
+    //    2,3,5,7, // L - 4
+    //    3,5,7,6, // J - 5
+    //    2,3,4,5, // O - 6
+    //};
+
+    Point shapes[7][4] =
     {
-        1,3,5,7, // I - 0
-        2,4,5,7, // Z - 1
-        3,5,4,6, // S - 2
-        3,5,4,7, // T - 3
-        2,3,5,7, // L - 4
-        3,5,7,6, // J - 5
-        2,3,4,5, // O - 6
+        {{0,1}, {1,1}, {2,1}, {3,1}}, // I - 0
+        {{0,0}, {1,0}, {1,1}, {2,1}}, // Z - 1
+        {{0,1}, {1,1}, {1,0}, {2,0}}, // S - 2
+        {{0,1}, {1,1}, {2,1}, {1,0}}, // T - 3
+        {{0,1}, {1,1}, {2,1}, {2,0}}, // L - 4
+        {{0,0}, {0,1}, {1,1}, {2,1}}, // J - 5
+        {{1,0}, {2,0}, {1,1}, {2,1}}, // O - 6
     };
 
     Clock waitTime; // tracks how long completed lines have been on screen
